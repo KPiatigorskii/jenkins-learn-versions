@@ -20,14 +20,14 @@ node {
     def currentVersion = ''
     def releaseVersion = ''
     def nextVersion = ''
-    
+
     try {
         if (env.BRANCH_NAME.startsWith('release/')){
             stage('Calculate & Set Version'){
                 def pomXml = readMavenPom file: 'pom.xml'
-                def currentVersion = pomXml.version
-                def releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
-                def nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
+                currentVersion = pomXml.version
+                releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
+                nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
                     set(2, it[2] + 1)
                     if (it[2] >= 10) {
                         set(1, it[1] + 1)
