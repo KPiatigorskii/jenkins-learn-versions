@@ -16,31 +16,30 @@
 // Add Code analysis with 'checkstyle'
 
 node {
-
     try {
-        stage('Calculate & Set Version'){
-            when { 
-                branch "release/*" 
-            }
-            def pomXml = readMavenPom file: 'pom.xml'
-            def currentVersion = pomXml.version
-            def releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
-            def nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
-                set(2, it[2] + 1)
-                if (it[2] >= 10) {
-                    set(1, it[1] + 1)
-                    set(2, 0)
+        if (env.BRANCH_NAME.startsWith('release/')){
+            stage('Calculate & Set Version'){
+                def pomXml = readMavenPom file: 'pom.xml'
+                def currentVersion = pomXml.version
+                def releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
+                def nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
+                    set(2, it[2] + 1)
+                    if (it[2] >= 10) {
+                        set(1, it[1] + 1)
+                        set(2, 0)
+                    }
+                    if (it[1] >= 10) {
+                        set(0, it[0] + 1)
+                        set(1, 0)
+                    }
+                    join('.')
                 }
-                if (it[1] >= 10) {
-                    set(0, it[0] + 1)
-                    set(1, 0)
-                }
-                join('.')
+                pomXml.version = nextVersion
+                writeMavenPom model: pomXml, file: 'pom.xml'
+                sh "git commit -am 'Set version to ${nextVersion}'"
             }
-            pomXml.version = nextVersion
-            writeMavenPom model: pomXml, file: 'pom.xml'
-            sh "git commit -am 'Set version to ${nextVersion}'"
         }
+
         stage("Build & Test"){
 
         }
