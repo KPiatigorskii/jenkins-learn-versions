@@ -22,7 +22,7 @@ node {
     def nextVersion = ''
 
     try {
-        if (env.BRANCH_NAME.startsWith('release/')){
+        if (env.GIT_BRANCH.startsWith('release/')){
             stage('Calculate & Set Version'){
                 def pomXml = readMavenPom file: 'pom.xml'
                 currentVersion = pomXml.version
@@ -67,7 +67,7 @@ node {
     }
     finally{
         stage("summary"){
-            echo "${env.BRANCH_NAME}"
+            echo "${env.GIT_BRANCH}"
             echo "currentVersion: ${currentVersion}"
             echo "releaseVersion: ${releaseVersion}"
             echo "nextVersion ${nextVersion}"
