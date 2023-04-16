@@ -1,79 +1,80 @@
-pipeline {
+// Write a Jenkinsfile that performs the following steps:
 
-    agent any
+// Calculate & Set Version: This stage is run when the branch name matches the pattern "release/*".
+// It calculates the next version number for the release, sets the version number in the project's pom.xml file, and commits the change to the source code repository.
 
-    tools {
-        maven "maven-3.6.2"
-    }
+// Build & Test: This stage builds and tests the project.
 
-    environment {
-        GIT_URL_HTTP = "https://github.com/PeretzBatel/lib0.git"
-    }
+// Publish: This stage is run when the branch name is either "main" or matches the pattern "release/*". 
+// It deploys the project to a Maven repository using settings defined in a configuration file.
 
-    stages {
-        stage("Calculate & Set version") {
-            when {
-                branch "release/*"
+
+//  Add a slack notification
+// which informs if the build succeeded or failed
+
+// Bonus:
+// Add Code analysis with 'checkstyle'
+
+node {
+
+    try {
+        stage('Calculate & Set Version'){
+            when { 
+                branch "release/*" 
             }
-            steps {
-                script {
-                    majorMinor = env.BRANCH_NAME.split("/")[1]  // x.y
-                    withCredentials([[$class: "UsernamePasswordMultiBinding", credentialsId: "gitlab-pass", usernameVariable: "GL_USER", passwordVariable: "GL_PASS"]]) {
-                        sh "git fetch http://${GL_USER}:${GL_PASS}@${env.GIT_URL_HTTP} --tags"
-                    }
-                    previousTag = sh(script: "git describe --tags --abbrev=0 | grep -E '^$majorMinor' || true", returnStdout: true).trim()  // x.y.z or empty string. `grep` is used to prevent returning a tag from another release branch; `true` is used to not fail the pipeline if grep returns nothing.
-
-                    if (!previousTag) {
-                        patch = "0"
-                    } else {
-                        patch = (previousTag.tokenize(".")[2].toInteger() + 1).toString()
-                    }
-                    env.VERSION = majorMinor + "." + patch
-
-                    sh "mvn versions:set -DnewVersion=$env.VERSION"
+            def pomXml = readMavenPom file: 'pom.xml'
+            def currentVersion = pomXml.version
+            def releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
+            def nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
+                set(2, it[2] + 1)
+                if (it[2] >= 10) {
+                    set(1, it[1] + 1)
+                    set(2, 0)
                 }
-            }
-        }
-
-        stage("Build & Test") {
-            steps {
-                sh "mvn verify"
-                
-            }
-        }
-
-        stage("Publish") {
-            when {
-                anyOf {
-                    branch "main"
-                    branch "release/*"
+                if (it[1] >= 10) {
+                    set(0, it[0] + 1)
+                    set(1, 0)
                 }
+                join('.')
             }
-        steps {
-            configFileProvider([configFile(fileId: 'maven_settings', variable: 'MAVEN_SETTINGS')]) {
-    // some block
+            pomXml.version = nextVersion
+            writeMavenPom model: pomXml, file: 'pom.xml'
+            sh "git commit -am 'Set version to ${nextVersion}'"
+        }
+        stage("Build & Test"){
 
-            sh "mvn -s $MAVEN_SETTINGS deploy"
-            }
-         
-            }
+        }
+        stage("Publish"){
+
         }
 
-//         stage("Tag") {
-//             when {
-//                 branch "release/*"
-//             }
-//             steps {
-//                 script {
-//                     // sshagent(credentials: ["jenkins-ssh"]) {
-//                     withCredentials([[$class: "UsernamePasswordMultiBinding", credentialsId: "gitlab-userpass", usernameVariable: "GL_USER", passwordVariable: "GL_PASS"]]) {
-//                         sh "git clean -f -x"
-//                         sh "git tag -a ${env.VERSION} -m 'version ${env.VERSION}'"
-//                         sh "git push http://${GL_USER}:${GL_PASS}@${env.GIT_URL_HTTP} --tag"
-//                     }
-//                 }
-//             }
-//         }
+            
+    }
+    catch (e) {
+        stage('slack-notify'){
+            slackSend(
+                color: "#FF0000",
+                channel: "jenkins-notify",
+                message: "${currentBuild.fullDisplayName} was failed",
+                tokenCredentialId: 'slack-token' 
+            )
+        }
 
     }
+    finally{
+        stage("check-code with checkstyle"){
+
+        }
+        stage('slack-notify'){
+            slackSend(
+                color: "#FF0000",
+                channel: "jenkins-notify",
+                message: "${currentBuild.fullDisplayName} succeeded",
+                tokenCredentialId: 'slack-token' 
+            )
+        }
+    }
+
+
+
 }
