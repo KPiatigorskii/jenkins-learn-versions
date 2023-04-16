@@ -17,6 +17,10 @@
 
 node {
 
+    def currentVersion = ''
+    def releaseVersion = ''
+    def nextVersion = ''
+    
     try {
         if (env.BRANCH_NAME.startsWith('release/')){
             stage('Calculate & Set Version'){
