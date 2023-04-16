@@ -16,6 +16,7 @@
 // Add Code analysis with 'checkstyle'
 
 node {
+
     try {
         if (env.BRANCH_NAME.startsWith('release/')){
             stage('Calculate & Set Version'){
@@ -61,6 +62,12 @@ node {
 
     }
     finally{
+        stage("summary"){
+            echo "${env.BRANCH_NAME}"
+            echo "currentVersion: ${currentVersion}"
+            echo "releaseVersion: ${releaseVersion}"
+            echo "nextVersion ${nextVersion}"
+        }
         stage("check-code with checkstyle"){
 
         }
