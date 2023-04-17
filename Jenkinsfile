@@ -23,6 +23,8 @@ node {
 
     try {
         echo "${scm.getBranches()[0]}"
+        def branchName = env.GIT_BRANCH
+        echo "Git Branch: ${branchName}"
         if (env.BRANCH_NAME.startsWith('release/')){
             stage('Calculate & Set Version'){
 
