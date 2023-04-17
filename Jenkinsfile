@@ -20,87 +20,74 @@ node {
     def currentVersion = ''
     def releaseVersion = ''
     def nextVersion = ''
-    def branchName = ''
+    def branchName = scm.getBranches()[0]
+
+    try {
+        if ("${branchName}".startsWith('release/')){
+            stage('Calculate & Set Version'){
 
 
-        stage("test"){
-            branchName = scm.getBranches()[0]
-            // echo "Git Branch: ${branchName}"
-            echo "Started or not ${"${branchName}".startsWith('release/')}"
+                echo "Calculate & Set Version"
+                def pomXml = readMavenPom file: 'pom.xml'
+                currentVersion = pomXml.version
+                releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
+                nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
+                    set(2, it[2] + 1)
+                    if (it[2] >= 10) {
+                        set(1, it[1] + 1)
+                        set(2, 0)
+                    }
+                    if (it[1] >= 10) {
+                        set(0, it[0] + 1)
+                        set(1, 0)
+                    }
+                    join('.')
+                }
+                pomXml.version = nextVersion
+                writeMavenPom model: pomXml, file: 'pom.xml'
+                sh "git commit -am 'Set version to ${nextVersion}'"
+            }
         }
 
-    // try {
+        stage("Build & Test"){
 
-    //     stage("test"){
-    //         branchName = scm.getBranches()[0]
-    //         // echo "Git Branch: ${branchName}"
-    //         echo "Started or not ${"${BRANCH_NAME}".startsWith('release/')}"
-    //     }
-    //     if (branchName.startsWith('release/')){
-    //         stage('Calculate & Set Version'){
+        }
+        stage("Publish"){
 
-
-    //             echo "Calculate & Set Version"
-    //             def pomXml = readMavenPom file: 'pom.xml'
-    //             currentVersion = pomXml.version
-    //             releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
-    //             nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
-    //                 set(2, it[2] + 1)
-    //                 if (it[2] >= 10) {
-    //                     set(1, it[1] + 1)
-    //                     set(2, 0)
-    //                 }
-    //                 if (it[1] >= 10) {
-    //                     set(0, it[0] + 1)
-    //                     set(1, 0)
-    //                 }
-    //                 join('.')
-    //             }
-    //             pomXml.version = nextVersion
-    //             writeMavenPom model: pomXml, file: 'pom.xml'
-    //             sh "git commit -am 'Set version to ${nextVersion}'"
-    //         }
-    //     }
-
-    //     stage("Build & Test"){
-
-    //     }
-    //     stage("Publish"){
-
-    //     }
+        }
 
             
-    // }
-    // catch (e) {
-    //     stage('slack-notify'){
-    //         slackSend(
-    //             color: "#FF0000",
-    //             channel: "jenkins-notify",
-    //             message: "${currentBuild.fullDisplayName} was failed",
-    //             tokenCredentialId: 'slack-token' 
-    //         )
-    //     }
+    }
+    catch (e) {
+        stage('slack-notify'){
+            slackSend(
+                color: "#FF0000",
+                channel: "jenkins-notify",
+                message: "${currentBuild.fullDisplayName} was failed",
+                tokenCredentialId: 'slack-token' 
+            )
+        }
 
-    // }
-    // finally{
-    //     stage("summary"){
-    //         echo "${branchName}"
-    //         echo "currentVersion: ${currentVersion}"
-    //         echo "releaseVersion: ${releaseVersion}"
-    //         echo "nextVersion ${nextVersion}"
-    //     }
-    //     stage("check-code with checkstyle"){
+    }
+    finally{
+        stage("summary"){
+            echo "${branchName}"
+            echo "currentVersion: ${currentVersion}"
+            echo "releaseVersion: ${releaseVersion}"
+            echo "nextVersion ${nextVersion}"
+        }
+        stage("check-code with checkstyle"){
 
-    //     }
-    //     stage('slack-notify'){
-    //         slackSend(
-    //             color: "#FF0000",
-    //             channel: "jenkins-notify",
-    //             message: "${currentBuild.fullDisplayName} succeeded",
-    //             tokenCredentialId: 'slack-token' 
-    //         )
-    //     }
-    // }
+        }
+        stage('slack-notify'){
+            slackSend(
+                color: "#FF0000",
+                channel: "jenkins-notify",
+                message: "${currentBuild.fullDisplayName} succeeded",
+                tokenCredentialId: 'slack-token' 
+            )
+        }
+    }
 
 
 
