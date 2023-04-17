@@ -37,7 +37,9 @@ pipeline {
                         }
                         join('.')
                     }
+                    echo "nextVersion: $nextVersion"
                     pomXml.version = nextVersion
+
                     writeMavenPom model: pomXml, file: 'pom.xml'
                     sh "git commit -am 'Set version to ${nextVersion}'"
                 }
