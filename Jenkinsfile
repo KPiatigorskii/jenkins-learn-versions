@@ -28,24 +28,33 @@ node {
 
 
                 echo "Calculate & Set Version"
-                def pomXml = readMavenPom file: 'pom.xml'
-                currentVersion = pomXml.version
-                releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
-                nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
-                    set(2, it[2] + 1)
-                    if (it[2] >= 10) {
-                        set(1, it[1] + 1)
-                        set(2, 0)
+                try{
+                    def pomXml = readMavenPom file: 'pom.xml'
+                    currentVersion = pomXml.version
+                    releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
+                    nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
+                        set(2, it[2] + 1)
+                        if (it[2] >= 10) {
+                            set(1, it[1] + 1)
+                            set(2, 0)
+                        }
+                        if (it[1] >= 10) {
+                            set(0, it[0] + 1)
+                            set(1, 0)
+                        }
+                        join('.')
                     }
-                    if (it[1] >= 10) {
-                        set(0, it[0] + 1)
-                        set(1, 0)
-                    }
-                    join('.')
+                    pomXml.version = nextVersion
+                    writeMavenPom model: pomXml, file: 'pom.xml'
+                    sh "git commit -am 'Set version to ${nextVersion}'"
                 }
-                pomXml.version = nextVersion
-                writeMavenPom model: pomXml, file: 'pom.xml'
-                sh "git commit -am 'Set version to ${nextVersion}'"
+                catch(e){
+                    echo "$e"
+                }
+                finally{
+                    echo "stage was successfull"
+                }
+
             }
         }
 
