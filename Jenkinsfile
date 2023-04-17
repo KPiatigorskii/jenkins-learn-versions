@@ -7,10 +7,21 @@ pipeline {
     }
 
     stages {
+        stage ('Increment snapshot'){            
+            steps {
+                        sh "mvn build-helper:parse-version versions:set /
+                        -DnewVersion='\${parsedVersion.majorVersion}.\${parsedVersion.minorVersion}.\${parsedVersion.nextIncrementalVersion}-SNAPSHOT' versions:commit"
+                }             
+            }
+        }
         stage('Calculate & Set Version') {
             when {
                 expression { "${scm.branches[0].name}" =~ /^release\// }
             }
+
+
+
+
             steps {
                 echo "BRANCH: ${scm.branches[0].name}"
                 sh "ls"
