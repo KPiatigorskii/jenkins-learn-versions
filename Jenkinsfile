@@ -24,6 +24,7 @@ node {
     try {
         if (env.GIT_BRANCH.startsWith('release/')){
             stage('Calculate & Set Version'){
+                echo "Calculate & Set Version"
                 def pomXml = readMavenPom file: 'pom.xml'
                 currentVersion = pomXml.version
                 releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
