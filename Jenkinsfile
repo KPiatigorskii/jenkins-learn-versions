@@ -23,10 +23,14 @@ node {
     def branchName = ''
 
     try {
-        echo "Git Branch: ${scm.getBranches()[0]}"
-        branchName = scm.getBranches()[0]
-        def g = branchName.startsWith('release/')
-        echo "Started or not ${g}"
+
+        stage("test"){
+            branchName = scm.getBranches()[0]
+            echo "Git Branch: ${branchName}"
+
+            def g = branchName.startsWith('release/')
+            echo "Started or not ${g}"
+        }
         if (branchName.startsWith('release/')){
             stage('Calculate & Set Version'){
 
