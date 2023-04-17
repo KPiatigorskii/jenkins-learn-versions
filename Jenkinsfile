@@ -22,7 +22,7 @@ node {
     def nextVersion = ''
 
     try {
-        echo "${scm.getBranches()}"
+        echo "${scm.getBranches()[0]}"
         if (env.BRANCH_NAME.startsWith('release/')){
             stage('Calculate & Set Version'){
 
