@@ -26,7 +26,7 @@ node {
         stage("test"){
             branchName = scm.getBranches()[0]
             // echo "Git Branch: ${branchName}"
-            echo "Started or not ${"${BRANCH_NAME}".startsWith('release/')}"
+            echo "Started or not ${"${branchName}".startsWith('release/')}"
         }
 
     // try {
