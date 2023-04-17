@@ -12,6 +12,7 @@ pipeline {
                 expression { "${env.GIT_BRANCH}" =~ /^release\// }
             }
             steps {
+                echo "BRANCH: ${env.GIT_BRANCH}"
                 script {
                     def currentVersion = ''
                     def releaseVersion = ''
