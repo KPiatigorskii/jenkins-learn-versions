@@ -20,8 +20,11 @@ pipeline {
                     def nextVersion = ''
 
                     def pomXml = readMavenPom file: 'pom.xml'
+                    echo "pomXml: $pomXml"
                     currentVersion = pomXml.version
+                    echo "currentVersion: $currentVersion"
                     releaseVersion = "${currentVersion}".replaceAll(/-SNAPSHOT$/, '')
+                    echo "releaseVersion: $releaseVersion"
                     nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
                         set(2, it[2] + 1)
                         if (it[2] >= 10) {
