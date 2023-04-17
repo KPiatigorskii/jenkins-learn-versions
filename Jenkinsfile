@@ -13,6 +13,7 @@ pipeline {
             }
             steps {
                 echo "BRANCH: ${scm.branches[0].name}"
+                ls
                 script {
                     def currentVersion = ''
                     def releaseVersion = ''
