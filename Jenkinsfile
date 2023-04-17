@@ -22,8 +22,10 @@ node {
     def nextVersion = ''
 
     try {
+        echo "${scm}"
         if (GIT_BRANCH.startsWith('release/')){
             stage('Calculate & Set Version'){
+
                 echo "Calculate & Set Version"
                 def pomXml = readMavenPom file: 'pom.xml'
                 currentVersion = pomXml.version
