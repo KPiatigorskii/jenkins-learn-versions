@@ -27,12 +27,15 @@ pipeline {
                     echo "pomXml: $pomXml"
                     nextVersion = pomXml.version
                     sh "git commit -am 'Set version to ${nextVersion}'"
+                    sh "git push"
                 }
             }       
         }
         stage('Build & Test') {
             steps {
-                sh 'mvn clean verify'
+                 withMaven(maven: 'maven-tool') {
+                    sh 'mvn clean verify'
+                 }
             }
         }
         stage('Publish') {
@@ -40,7 +43,7 @@ pipeline {
                 expression { "${scm.branches[0].name}" == 'main' || "${scm.branches[0].name}" =~ /^release\// }
             }
             steps {
-                withMaven(maven: 'Maven') {
+                withMaven(maven: 'maven-tool') {
                     sh 'mvn deploy'
                 }
             }
