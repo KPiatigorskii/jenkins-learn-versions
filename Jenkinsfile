@@ -20,10 +20,11 @@ node {
     def currentVersion = ''
     def releaseVersion = ''
     def nextVersion = ''
+    def branchName = ''
 
     try {
         echo "Git Branch: ${scm.getBranches()[0]}"
-        def branchName = scm.getBranches()[0]
+        branchName = scm.getBranches()[0]
         if (branchName.startsWith('release/')){
             stage('Calculate & Set Version'){
 
