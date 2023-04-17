@@ -16,7 +16,11 @@
 // Add Code analysis with 'checkstyle'
 
 node {
-
+    options {
+        timestamps()
+        // add this line to increase log verbosity
+        buildDiscarder(logRotator(numToKeepStr:'10'))
+    }
     def currentVersion = ''
     def releaseVersion = ''
     def nextVersion = ''
