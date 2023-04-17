@@ -25,7 +25,7 @@ pipeline {
                     echo "currentVersion: $currentVersion"
                     releaseVersion = "${currentVersion}".replaceAll(/-SNAPSHOT$/, '')
                     echo "releaseVersion: $releaseVersion"
-                    nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
+                    nextVersion = "${releaseVersion}".tokenize('.').collect { it.toInteger() }.with {
                         set(2, it[2] + 1)
                         if (it[2] >= 10) {
                             set(1, it[1] + 1)
