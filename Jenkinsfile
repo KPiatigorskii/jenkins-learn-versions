@@ -22,10 +22,9 @@ node {
     def nextVersion = ''
 
     try {
-        echo "${scm.getBranches()[0]}"
-        def branchName = env.GIT_BRANCH
-        echo "Git Branch: ${branchName}"
-        if (env.BRANCH_NAME.startsWith('release/')){
+        echo "Git Branch: ${scm.getBranches()[0]}"
+        def branchName = scm.getBranches()[0]
+        if (branchName.startsWith('release/')){
             stage('Calculate & Set Version'){
 
                 echo "Calculate & Set Version"
@@ -72,7 +71,7 @@ node {
     }
     finally{
         stage("summary"){
-            echo "${env.BRANCH_NAME}"
+            echo "${branchName}"
             echo "currentVersion: ${currentVersion}"
             echo "releaseVersion: ${releaseVersion}"
             echo "nextVersion ${nextVersion}"
