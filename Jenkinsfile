@@ -23,7 +23,7 @@ node {
 
     try {
         echo "${scm}"
-        if (GIT_BRANCH.startsWith('release/')){
+        if (env.BRANCH_NAME.startsWith('release/')){
             stage('Calculate & Set Version'){
 
                 echo "Calculate & Set Version"
@@ -70,7 +70,7 @@ node {
     }
     finally{
         stage("summary"){
-            echo "${GIT_BRANCH}"
+            echo "${env.BRANCH_NAME}"
             echo "currentVersion: ${currentVersion}"
             echo "releaseVersion: ${releaseVersion}"
             echo "nextVersion ${nextVersion}"
