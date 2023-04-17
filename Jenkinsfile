@@ -27,7 +27,7 @@ pipeline {
                     echo "pomXml: $pomXml"
                     nextVersion = pomXml.version
                     sh "git commit -am 'Set version to ${nextVersion}'"
-                    sh "git push"
+                    //sh "git push"
                 }
             }       
         }
