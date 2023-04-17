@@ -38,6 +38,13 @@ pipeline {
                  }
             }
         }
+        stage('Checkstyle') {
+            steps {
+                withMaven(maven: 'maven-tool') {
+                    sh 'mvn checkstyle:check'
+                }
+            }
+        }
         stage('Publish') {
             when {
                 expression { "${scm.branches[0].name}" == 'main' || "${scm.branches[0].name}" =~ /^release\// }
