@@ -9,10 +9,10 @@ pipeline {
     stages {
         stage('Calculate & Set Version') {
             when {
-                expression { "${env.GIT_BRANCH}" =~ /^release\// }
+                expression { "${scm.branches[0].name}" =~ /^release\// }
             }
             steps {
-                echo "BRANCH: ${env.GIT_BRANCH}"
+                echo "BRANCH: ${scm.branches[0].name}"
                 script {
                     def currentVersion = ''
                     def releaseVersion = ''
