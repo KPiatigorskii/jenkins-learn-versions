@@ -16,17 +16,17 @@
 // Add Code analysis with 'checkstyle'
 
 node {
-    options {
-        timestamps()
-        // add this line to increase log verbosity
-        buildDiscarder(logRotator(numToKeepStr:'10'))
-    }
+
     def currentVersion = ''
     def releaseVersion = ''
     def nextVersion = ''
     def branchName = scm.getBranches()[0]
 
     try {
+        echo 'Setting log level to DEBUG'
+        sh 'export MAVEN_OPTS="-Xmx512m -Xms256m -XX:MaxPermSize=256m -Xdebug -Xrunjdwp:transport=dt_socket,address=4000,server=y,suspend=n"'
+        sh 'mvn clean install -X'
+
         if ("${branchName}".startsWith('release/')){
             stage('Calculate & Set Version'){
 
