@@ -30,8 +30,14 @@ node {
                 echo "Calculate & Set Version"
                 try{
                     def pomXml = readMavenPom file: 'pom.xml'
+                    echo "pomXml: ${pomXml}"
                     currentVersion = pomXml.version
-                    releaseVersion = currentVersion.replaceAll(/-SNAPSHOT$/, '')
+                    echo "currentVersion: ${currentVersion}"
+                    releaseVersion = "${currentVersion}".replaceAll(/-SNAPSHOT$/, '')
+                    echo "${branchName}"
+                    echo "currentVersion: ${currentVersion}"
+                    echo "releaseVersion: ${releaseVersion}"
+                    echo "nextVersion ${nextVersion}"
                     nextVersion = releaseVersion.tokenize('.').collect { it.toInteger() }.with {
                         set(2, it[2] + 1)
                         if (it[2] >= 10) {
@@ -49,10 +55,8 @@ node {
                     sh "git commit -am 'Set version to ${nextVersion}'"
                 }
                 catch(e){
+                    echo "error"
                     echo "$e"
-                }
-                finally{
-                    echo "stage was successfull"
                 }
 
             }
